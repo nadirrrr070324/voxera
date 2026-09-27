@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { SpeakerBadge } from "@/components/SpeakerBadge";
 import { ActionItemsView } from "@/components/ActionItemsView";
+import { DemoResultNotice } from "@/components/ErrorStates";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import type { ActionsResult, TranscribeResult } from "@/lib/types";
 
@@ -24,6 +25,11 @@ export default function TranscribePage() {
   const [actions, setActions] = useState<ActionsResult | null>(null);
   const [source, setSource] = useState<"gemini" | "demo" | null>(null);
   const [sourceReason, setSourceReason] = useState<string | null>(null);
+  const [actionsNotice, setActionsNotice] = useState<{
+    source?: "gemini" | "demo";
+    reason?: string;
+    connected?: boolean;
+  } | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const recorder = useAudioRecorder();
   const [saving, setSaving] = useState(false);
@@ -52,6 +58,14 @@ export default function TranscribePage() {
       body: JSON.stringify({ transcript: transcriptText }),
     }).then((r) => r.json());
     setActions(actionsRes.result);
+    // Action extraction runs as a separate model call with its own failure
+    // mode, so it needs its own provenance rather than inheriting the
+    // transcript's.
+    setActionsNotice({
+      source: actionsRes.source,
+      reason: actionsRes.reason ?? undefined,
+      connected: actionsRes.engineConnected,
+    });
   }, []);
 
   const onFileChange = useCallback(
@@ -143,17 +157,7 @@ export default function TranscribePage() {
       </div>
 
       {source === "demo" && sourceReason && (
-        <div
-          role="status"
-          className="rounded-2xl p-4 text-sm"
-          style={{
-            background: "var(--md-sys-color-tertiary-container)",
-            color: "var(--md-sys-color-on-tertiary-container)",
-          }}
-        >
-          <span className="font-medium">This transcript is canned demo content, not a real transcription.</span>{" "}
-          <span className="opacity-80">{sourceReason}</span>
-        </div>
+        <DemoResultNotice source={source} reason={sourceReason} what="This transcript" />
       )}
 
       {transcript && (
@@ -187,6 +191,15 @@ export default function TranscribePage() {
                 {saving ? "Saving…" : saved ? "Saved ✓" : "Save Conversation"}
               </button>
             </div>
+            {actions && (
+              <DemoResultNotice
+                source={actionsNotice?.source}
+                reason={actionsNotice?.reason}
+                connected={actionsNotice?.connected}
+                what="The summary and action items"
+                className="mb-3"
+              />
+            )}
             {actions ? <ActionItemsView result={actions} /> : <p className="text-sm text-[var(--md-sys-color-on-surface-variant)]">Generating summary & action items…</p>}
           </div>
         </div>

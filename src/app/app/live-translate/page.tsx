@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { TranslationPanel } from "@/components/TranslationPanel";
 import { VoicePicker } from "@/components/VoicePicker";
-import { UnsupportedBrowserNotice } from "@/components/ErrorStates";
+import { UnsupportedBrowserNotice, DemoResultNotice } from "@/components/ErrorStates";
 import { useSpeechRecognition, isSpeechRecognitionSupported } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useVoicePreference } from "@/hooks/useVoicePreference";
@@ -19,6 +19,11 @@ export default function LiveTranslatePage() {
   const [translated1, setTranslated1] = useState("");
   const [translated2, setTranslated2] = useState("");
   const [listening, setListening] = useState(false);
+  const [notice, setNotice] = useState<{
+    source?: "gemini" | "demo";
+    reason?: string;
+    connected?: boolean;
+  } | null>(null);
   const tts = useSpeechSynthesis();
   const { voice } = useVoicePreference();
 
@@ -49,6 +54,12 @@ export default function LiveTranslatePage() {
 
         if (speaker === 1) setTranslated1(res.text);
         else setTranslated2(res.text);
+
+        setNotice({
+          source: res.source,
+          reason: res.reason ?? undefined,
+          connected: res.engineConnected,
+        });
 
         tts.speak(res.text, {
           audioBase64: res.audio?.audioBase64,
@@ -128,6 +139,15 @@ export default function LiveTranslatePage() {
           onSelect={() => switchSpeaker(2)}
         />
       </div>
+
+      {notice && (
+        <DemoResultNotice
+          source={notice.source}
+          reason={notice.reason}
+          connected={notice.connected}
+          what="The translation"
+        />
+      )}
 
       {recog.interim && (
         <p className="rounded-xl border border-dashed border-[var(--md-sys-color-outline)] px-4 py-2 text-sm italic text-[var(--md-sys-color-on-surface-variant)]">

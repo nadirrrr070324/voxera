@@ -54,3 +54,47 @@ export function EngineUnavailableNotice() {
     </div>
   );
 }
+
+/**
+ * Marks AI output that came from the canned demo bank rather than the model.
+ *
+ * Renders nothing when `source` is "gemini", so callers can mount it
+ * unconditionally instead of duplicating conditional JSX per page.
+ *
+ * `what` names the output being disclaimed ("This transcript", "The
+ * translation"), keeping the wording specific enough that a reader never
+ * mistakes placeholder text for a real result.
+ */
+export function DemoResultNotice({
+  source,
+  reason,
+  what,
+  connected,
+  className = "",
+}: {
+  source?: "gemini" | "demo" | null;
+  reason?: string | null;
+  what: string;
+  connected?: boolean;
+  className?: string;
+}) {
+  if (source !== "demo") return null;
+
+  return (
+    <div
+      role="status"
+      className={`rounded-2xl p-4 text-sm ${className}`.trim()}
+      style={{
+        background: "var(--md-sys-color-tertiary-container)",
+        color: "var(--md-sys-color-on-tertiary-container)",
+      }}
+    >
+      <span className="font-medium">
+        {connected === false
+          ? `${what} is canned demo content, not a real result.`
+          : `${what} came from the canned demo bank, not from Gemini.`}
+      </span>{" "}
+      {reason && <span className="opacity-80">{reason}</span>}
+    </div>
+  );
+}
