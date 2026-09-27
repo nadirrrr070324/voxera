@@ -307,7 +307,10 @@ export default function LiveVoicePage() {
                   <span className="opacity-80">
                     Replies below are canned placeholder text, not real answers. Add{" "}
                     <code className="rounded bg-black/25 px-1 py-0.5 text-xs">GEMINI_API_KEY</code> to{" "}
-                    <code className="rounded bg-black/25 px-1 py-0.5 text-xs">.env.local</code> and restart to get{" "}
+                    <code className="rounded bg-black/25 px-1 py-0.5 text-xs">
+                      {process.env.NEXT_PUBLIC_VERCEL_ENV ? "Vercel env vars" : ".env.local"}
+                    </code>{" "}
+                    {process.env.NEXT_PUBLIC_VERCEL ? "and redeploy" : "and restart"} to get{" "}
                     <span className="font-medium">gemini-3.8-flash</span> responses.
                   </span>
                 </>

@@ -10,7 +10,9 @@ function createPool() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error(
-      "DATABASE_URL is required. Copy .env.example to .env.local and set DATABASE_URL.",
+      process.env.VERCEL
+        ? "DATABASE_URL is required. Add it to the Vercel project's environment variables."
+        : "DATABASE_URL is required. Copy .env.example to .env.local and set DATABASE_URL.",
     );
   }
   return new Pool({ connectionString });

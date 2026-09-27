@@ -52,7 +52,10 @@ export function demoReply(userText: string, connected = false): string {
   if (connected) {
     return `Gemini is temporarily overloaded, so I can't answer "${trimmed.slice(0, 120)}" right now. Try again in a moment.`;
   }
-  return `I can't answer that yet — Voxera isn't connected to Gemini, so this is a placeholder instead of a real reply. Set GEMINI_API_KEY in .env.local to get a genuine answer to "${trimmed.slice(0, 120)}".`;
+  const where = process.env.VERCEL
+    ? "in the Vercel project's environment variables"
+    : "in .env.local and restart the server";
+  return `I can't answer that yet — Voxera isn't connected to Gemini, so this is a placeholder instead of a real reply. Set GEMINI_API_KEY ${where} to get a genuine answer to "${trimmed.slice(0, 120)}".`;
 }
 
 const DEMO_TRANSLATIONS: Record<string, string> = {
